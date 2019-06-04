@@ -8,7 +8,7 @@
                 </el-col>
                 <el-col :span="11">
                     <label class="year__label" for="amount">Year</label>
-                    <el-input-number v-model="year" size="small" :step="1" :min="0" :max="duration" @change="update"></el-input-number>
+                    <el-input-number v-model="year" size="small" :step="1" :min="1" :max="duration" @change="update"></el-input-number>
                 </el-col>
                 <el-col :span="3">
                     <div>

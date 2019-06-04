@@ -67,8 +67,11 @@
                 </el-table-column>
             </el-table>
         </div>
-        <div class="container-center">
-            <Chart v-if="displayTable" :years="years" :options="options" />
+        <div v-if="displayTable" class="container-center">
+            <el-card class="box-card">
+                <Chart :years="years" :options="options" />
+                <bar :years="years" />
+            </el-card>
         </div>
     </div>
 </template>
@@ -77,6 +80,7 @@
     import OptionInput from './OptionInput.vue'
     import OverpaymentInput from './OverpaymentInput.vue'
     import Chart from './Chart.vue'
+    import Bar from './Bar.vue'
 
     export default {
         data() {
@@ -97,7 +101,8 @@
         components: {
             OptionInput,
             OverpaymentInput,
-            Chart
+            Chart,
+            Bar
         },
         computed: {
             years() {
@@ -105,10 +110,17 @@
                 let remaining = this.amount;
                 let interestPaid, principlePaid;
                 let totalPaid = 0;
+
+                yearArray.push({
+                    year: 0,
+                    remaining,
+                    interestPaid: 0,
+                    principlePaid: 0,
+                    totalPaid: 0,
+                    overpayment: 0 
+                })
+
                 for (let i = 0; i < this.duration; i++){
-                    if (remaining < 0) {
-                        return;
-                    }
                     const overpayment = this.overpayments.find(function(overpayment) {
                         return overpayment.year === i + 1;
                     });
@@ -118,12 +130,17 @@
                     interestPaid = 0;
                     principlePaid = 0;
                     for (let j = 0; j < 12; j++){
+                        if (remaining <= 0) {
+                            break;
+                        }
                         interestPaid += remaining * (this.interest/12);
                         principlePaid += this.calculatePayments - (remaining * (this.interest/12));
                         totalPaid += this.calculatePayments;   
                         remaining -= this.calculatePayments - (remaining * (this.interest/12));
                         if (remaining < 0) {
-                            break;
+                            let difference = 0 - remaining;
+                            totalPaid -= difference;
+                            remaining = 0;
                         }
                     }
                     const payment = overpayment ? overpayment.payment : 0;
@@ -155,27 +172,22 @@
         },
         methods: {
             remainingFormatter(row) {
-                if (!row.remaining) return ''
-                let value = Math.abs(row.remaining.toFixed(2));
+                let value = row.remaining.toFixed(2);
                 return `£${value.toString()}`
             },
             interestPaidFormatter(row) {
-                if (!row.interestPaid) return ''
                 let value = row.interestPaid.toFixed(2);
                 return `£${value.toString()}`
             },
             principlePaidFormatter(row) {
-                if (!row.principlePaid) return ''
                 let value = row.principlePaid.toFixed(2);
                 return `£${value.toString()}`
             }, 
             totalPaidFormatter(row) {
-                if (!row.totalPaid) return ''
                 let value = row.totalPaid.toFixed(2);
                 return `£${value.toString()}`
             },
             overpaymentFormatter(row) {
-                if (!row.overpayment) return ''
                 let value = row.overpayment.toFixed(2);
                 return `£${value.toString()}`
             },
